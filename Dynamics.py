@@ -68,15 +68,22 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
 
         F = k * error_array[-1] + b * np.diff(error_array, axis=0)[
             -1] / dt  # +m*np.diff(error_array,n=2, axis=0)[-1]/dt
-        v = -F
+        v = np.zeros(6)
         # qvel = np.linalg.pinv(jacob).dot(v)
-        qvel = jacob.T.dot(v)
-        # Step the simulation.
-        data.ctrl = data.qpos + qvel * 0.02
+        # qvel = jacob.T.dot(v)
+        # # Step the simulation.
+        # data.ctrl = data.qpos + qvel * 0.02
         # data.qvel = qvel
         # data.xfrc_applied(np.array([1,0,0]))
         # data.qacc = 10000
-        mujoco.mj_step(model, data)
+        # mujoco.mj_step(model, data)
+        data.ctrl = v
+        data.qacc = 0
+        mujoco.mj_inverse(model,data)
+        # print(data.qvel)
+        # print(data.qacc)
+        print(data.qfrc_inverse)
+
         viewer.sync()
         # Render and save frames.
         if len(frames) < data.time * FRAMERATE:
