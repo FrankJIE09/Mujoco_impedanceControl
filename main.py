@@ -15,7 +15,7 @@ def impedance_control():
 
 # More legible printing from numpy.
 np.set_printoptions(precision=5, suppress=True, linewidth=100)
-model = mujoco.MjModel.from_xml_path("./mujoco_menagerie/universal_robots_ur5e/scene.xml")
+model = mujoco.MjModel.from_xml_path("./universal_robots_ur5e/scene.xml")
 data = mujoco.MjData(model)
 # mujoco.mj_jacSubtreeCom(model,data,None,0)
 renderer = mujoco.Renderer(model)
