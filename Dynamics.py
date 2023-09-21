@@ -15,7 +15,7 @@ def impedance_control():
 
 # More legible printing from numpy.
 np.set_printoptions(precision=5, suppress=True, linewidth=100)
-model = mujoco.MjModel.from_xml_path("./mujoco_menagerie/universal_robots_ur5e/scene.xml")
+model = mujoco.MjModel.from_xml_path("./universal_robots_ur5e/scene.xml")
 data = mujoco.MjData(model)
 # mujoco.mj_jacSubtreeCom(model,data,None,0)
 renderer = mujoco.Renderer(model)
@@ -58,7 +58,6 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     m = 1
     dt = 1
     while data.time < DURATION:
-        # data.xfrc_applied(mujoco.mjtMouse)
         mujoco.mj_jacBody(model, data, jacp, jacr, 7)
         jacob = np.vstack((jacp, jacr))
         r = Rotation.from_matrix(data.geom_xmat[-1].reshape(3, 3))
@@ -69,21 +68,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         F = k * error_array[-1] + b * np.diff(error_array, axis=0)[
             -1] / dt  # +m*np.diff(error_array,n=2, axis=0)[-1]/dt
         v = np.zeros(6)
-        # qvel = np.linalg.pinv(jacob).dot(v)
-        # qvel = jacob.T.dot(v)
-        # # Step the simulation.
-        # data.ctrl = data.qpos + qvel * 0.02
-        # data.qvel = qvel
-        # data.xfrc_applied(np.array([1,0,0]))
-        # data.qacc = 10000
-        # mujoco.mj_step(model, data)
-        data.ctrl = v
-        data.qacc = 0
-        mujoco.mj_inverse(model,data)
-        # print(data.qvel)
-        # print(data.qacc)
-        print(data.qfrc_inverse)
-
+        mujoco.mj_step(model, data)
         viewer.sync()
         # Render and save frames.
         if len(frames) < data.time * FRAMERATE:
