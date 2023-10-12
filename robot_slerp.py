@@ -1,4 +1,3 @@
-
 import time
 
 import numpy as np
@@ -6,6 +5,7 @@ import mujoco.viewer
 from scipy.spatial.transform import Rotation
 from scipy.spatial.transform import Slerp
 from ikpy.chain import Chain
+from Bézier_curve import bezier_curve
 
 # 从URDF文件中创建机械臂链
 my_chain = Chain.from_urdf_file("./config/ur5e.urdf",
@@ -43,15 +43,28 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     slerp = Slerp(key_times, key_rots)
     times = np.linspace(0, 4, 2000)
     interp_rots = slerp(times)
-    i = 0
+
     init_pos = data.xpos[-1].copy()
+    init_pos = [init_pos[1], -init_pos[0] + 0.1, init_pos[2]]
+    # import random
+    # for _ in range(3):
+    #     random_pos = [random.uniform(-1,1) for _ in range(3)]
+    path_array = np.array([[init_pos[0], init_pos[1], init_pos[2]-0.1],
+                           [init_pos[0]-0.1, init_pos[1], init_pos[2]-0.1],
+                           [init_pos[0]-0.1, init_pos[1], init_pos[2]],
+                           [init_pos[0], init_pos[1], init_pos[2]]]
+                          )
+    interp_pos = bezier_curve(path_array)
+    i = 0
     init_matrix = data.xmat[-1].reshape(3, 3).copy()
     target_matrix = np.eye(4)
     # 循环控制机械臂的姿态变化
     while i < 2000:
         # 计算目标变换矩阵
-        target_matrix[:3, :3] = np.dot(init_matrix, interp_rots[i].as_matrix())
-        target_matrix[:3, 3] = [init_pos[1], -init_pos[0] + 0.1, init_pos[2]]
+        # target_matrix[:3, :3] = np.dot(init_matrix, interp_rots[i].as_matrix())
+        target_matrix[:3, :3] = np.dot(init_matrix, init_orientation.as_matrix())
+
+        target_matrix[:3, 3] = interp_pos[i]
 
         # 使用逆运动学求解关节角度
         ik_joint = my_chain.inverse_kinematics_frame(target_matrix,
