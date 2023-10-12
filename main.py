@@ -53,7 +53,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     rpy = r.as_euler('xyz', degrees=False)
     init_pose = np.append(data.geom_xpos[-1], rpy.copy())
     error_array = np.zeros(6)
-    k = 30
+    k = 20
     b = 10
     m = 1
     dt = 1
@@ -71,9 +71,13 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         v = -F
         qvel = jacob.T.dot(v)
         # Step the simulation.
-        data.ctrl = data.qpos + qvel * 0.02
+        # data.ctrl = data.qpos + qvel * 0.02
+
+        # print(data.sensor(0).data, data.sensor(1).data)
+
         mujoco.mj_step(model, data)
         viewer.sync()
+        mujoco.mj_printFormattedModel(model, './1.txt', '%f')
         # Render and save frames.
         if len(frames) < data.time * FRAMERATE:
             camera.lookat = data.body('wrist_3_link').subtree_com

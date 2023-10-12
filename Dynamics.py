@@ -57,18 +57,22 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     b = 10
     m = 1
     dt = 1
-    while data.time < DURATION:
-        mujoco.mj_jacBody(model, data, jacp, jacr, 7)
-        jacob = np.vstack((jacp, jacr))
-        r = Rotation.from_matrix(data.geom_xmat[-1].reshape(3, 3))
-        rpy = r.as_euler('xyz', degrees=False)
-        error = np.append(data.geom_xpos[-1], rpy) - init_pose
-        error_array = np.vstack((error_array, error))
 
-        F = k * error_array[-1] + b * np.diff(error_array, axis=0)[
-            -1] / dt  # +m*np.diff(error_array,n=2, axis=0)[-1]/dt
-        v = np.zeros(6)
-        mujoco.mj_step(model, data)
+    while data.time < DURATION:
+        v = np.random.rand(model.nv)
+
+        # mujoco.mj_jacBody(model, data, jacp, jacr, 7)
+        # jacob = np.vstack((jacp, jacr))
+        # r = Rotation.from_matrix(data.geom_xmat[-1].reshape(3, 3))
+        # rpy = r.as_euler('xyz', degrees=False)
+        # error = np.append(data.geom_xpos[-1], rpy) - init_pose
+        # error_array = np.vstack((error_array, error))
+        #
+        # F = k * error_array[-1] + b * np.diff(error_array, axis=0)[
+        #     -1] / dt  # +m*np.diff(error_array,n=2, axis=0)[-1]/dt
+        # data.ctrl = v
+        data.qpos = 1
+        mujoco.mj_forward(model, data)
         viewer.sync()
         # Render and save frames.
         if len(frames) < data.time * FRAMERATE:

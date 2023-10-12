@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/gym_/gym" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gym_/gym/envs" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gym_/gym/spaces" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gym_/gym/utils" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gym_/gym/vector" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gym_/gym/wrappers" isTestSource="false" />
+    </content>
     <orderEntry type="jdk" jdkName="Mujoco" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
