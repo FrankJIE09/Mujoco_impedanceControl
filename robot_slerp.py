@@ -8,7 +8,7 @@ from scipy.spatial.transform import Slerp
 from ikpy.chain import Chain
 
 # 从URDF文件中创建机械臂链
-my_chain = Chain.from_urdf_file("../pybullet_ur5_gripper/robots/urdf/ur5e.urdf",
+my_chain = Chain.from_urdf_file("./config/ur5e.urdf",
                                 active_links_mask=[False, True, True, True, True, True, True, False])
 #
 np.set_printoptions(precision=5, suppress=True, linewidth=100)
