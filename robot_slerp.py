@@ -49,9 +49,9 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     # import random
     # for _ in range(3):
     #     random_pos = [random.uniform(-1,1) for _ in range(3)]
-    path_array = np.array([[init_pos[0], init_pos[1], init_pos[2]-0.1],
-                           [init_pos[0]-0.1, init_pos[1], init_pos[2]-0.1],
-                           [init_pos[0]-0.1, init_pos[1], init_pos[2]],
+    path_array = np.array([[init_pos[0], init_pos[1], init_pos[2] - 0.1],
+                           [init_pos[0] - 0.1, init_pos[1], init_pos[2] - 0.1],
+                           [init_pos[0] - 0.1, init_pos[1], init_pos[2]],
                            [init_pos[0], init_pos[1], init_pos[2]]]
                           )
     interp_pos = bezier_curve(path_array)
@@ -83,7 +83,23 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
 
         # 控制舵机运动
         data.ctrl = ik_joint[1:7]
+        # data.qpos = np.zeros(6)
+        # data.qacc = np.zeros(6) * 1
+        # data.qacc = np.ones(6)*1
+        # data.qvel = np.ones(6)*10
+        # data.act = 0
+        # data.qfrc_actuator = np.zeros(6)
+        print()
+        data.act = 0
+        # mujoco.mj_forward(model, data)
+        # data.qfrc_applied = np.ones(6)*5
+        # print(data.xfrc_applied )
+        # data.qfrc_applied = np.append(np.ones(3)*120,np.ones(3))
         mujoco.mj_step(model, data)
+        #
+        # mujoco.mj_step(model, data)
+        # print(data.actuator_force)
+
         # time.sleep(0.01)
         i = i + 1
         viewer.sync()
