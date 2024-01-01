@@ -76,14 +76,14 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
             J_last = J
             i = 1
         # mujoco.mj_printFormattedData(model)
-        if loop < 0:
+        if loop < 100:
             data.xfrc_applied[-1] = np.array([0, 1, 0, 0, 0, 0])
             Fext = data.xfrc_applied[-1]
             loop = loop + 1
         else:
-            # data.xfrc_applied[-1] = np.array([0, 0, 0, 0, 0, 0])
+            data.xfrc_applied[-1] = np.array([0, 0, 0, 0, 0, 0])
             Fext = data.xfrc_applied[-1]
-        Md = np.eye(6) * 1000
+        Md = np.eye(6) * 100
         Md[3:, 3:] = Md[3:, 3:]
         Bd = 10 * Md
         Kd = 30 * Md
