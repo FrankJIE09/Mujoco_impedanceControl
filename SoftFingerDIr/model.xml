@@ -1,8 +1,7 @@
-<worldbody>
-  <geom type="plane" size="1 1 .1"/>
-
-  <body pos="0 0 1">
-    <freejoint/>
-    <geom type="sphere" size="0.1" solref="-1000 0"/>
-  </body>
-</worldbody>
+<mujoco>
+  <worldbody>
+    <flexcomp name="FL" type="grid" dim="1" count="3 1 1" mass="3" spacing="0.2 0.2 0.2">
+      <pin id="0"/>
+    </flexcomp>
+  </worldbody>
+</mujoco>

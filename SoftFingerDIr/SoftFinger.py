@@ -2,35 +2,54 @@ import time
 
 import mediapy as media
 import mujoco.viewer
-xml = """
-<mujoco model="ur5e scene">
-
-  <include file="ur5e.xml"/>
-
-  <statistic center="0.3 0 0.4" extent="0.8"/>
-
-  <visual>
-    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
-    <rgba haze="0.15 0.25 0.35 1"/>
-    <global azimuth="120" elevation="-20"/>
-  </visual>
+tippe_top = """
+<mujoco model="tippe top">
+  <option integrator="RK4"/>
 
   <asset>
-    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
-    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
-      markrgb="0.8 0.8 0.8" width="300" height="300"/>
-    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1=".1 .2 .3"
+     rgb2=".2 .3 .4" width="300" height="300"/>
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance=".2"/>
   </asset>
 
   <worldbody>
-    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
-    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
-<!--    <geom name="red_box" type="box" size="1 0.02 1" rgba="1 0 0 1"  pos="0.2 0.5 .2"/>-->
+    <geom size=".2 .2 .01" type="plane" material="grid"/>
+    <light pos="0 0 .6"/>
+    <camera name="closeup" pos="0 -.1 .07" xyaxes="1 0 0 0 1 2"/>
+    <body name="top" pos="0 0 .02">
+      <freejoint/>
+      <geom name="ball" type="sphere" size=".02" />
+      <geom name="stem" type="cylinder" pos="0 0 .02" size="0.004 .008"/>
+      <geom name="ballast" type="box" size=".023 .023 0.005"  pos="0 0 -.015"
+       contype="0" conaffinity="0" group="3"/>
+    </body>
   </worldbody>
 
+  <keyframe>
+    <key name="spinning" qpos="0 0 0.02 1 0 0 0" qvel="0 0 0 0 1 200" />
+  </keyframe>
 </mujoco>
 """
-model = mujoco.MjModel.from_xml_string(xml)
+model = mujoco.MjModel.from_xml_string(tippe_top)
+renderer = mujoco.Renderer(model)
+data = mujoco.MjData(model)
+mujoco.mj_forward(model, data)
+renderer.update_scene(data)
+duration = 7    # (seconds)
+framerate = 60  # (Hz)
+
+# Simulate and display video.
+frames = []
+mujoco.mj_resetDataKeyframe(model, data, 0)  # Reset the state to keyframe 0
+while data.time < duration:
+  mujoco.mj_step(model, data)
+  if len(frames) < data.time * framerate:
+    renderer.update_scene(data, "closeup")
+    pixels = renderer.render()
+    frames.append(pixels)
+
+media.show_video(frames, fps=framerate)
+exit()
 data = mujoco.MjData(model)
 renderer = mujoco.Renderer(model)
 mujoco.mj_forward(model, data)
@@ -40,6 +59,9 @@ FRAMERATE = 60  # Hz
 # model.opt.gravity = (0, 0, -9.8)
 with mujoco.viewer.launch_passive(model, data) as viewer:
     while data.time < DURATION:
+
+        # data.xfrc_applied[body_id, :3] = force
+        # data.xfrc_applied[body_id, 3:] = torque
         # mujoco.mj_step(model, data)
         viewer.sync()
         # time.sleep(1)

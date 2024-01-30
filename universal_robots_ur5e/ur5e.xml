@@ -36,7 +36,8 @@
         <material class="ur5e" name="jointgray" rgba="0.278 0.278 0.278 1"/>
         <material class="ur5e" name="linkgray" rgba="0.82 0.82 0.82 1"/>
         <material class="ur5e" name="urblue" rgba="0.49 0.678 0.8 1"/>
-
+        <mesh file="softfinger.STL"/>
+        <material name="soft_material" texrepeat="5 5" reflectance="0.2"/>
         <mesh file="base_0.obj"/>
         <mesh file="base_1.obj"/>
         <mesh file="shoulder_0.obj"/>

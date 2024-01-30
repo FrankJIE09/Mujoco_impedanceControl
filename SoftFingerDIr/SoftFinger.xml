@@ -1,0 +1,6 @@
+<mujoco model="ur5e">
+    <compiler angle="radian" meshdir="assets" autolimits="true"/>
+
+    <option integrator="implicitfast"/>
+
+</mujoco>
