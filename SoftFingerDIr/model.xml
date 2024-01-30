@@ -1,0 +1,8 @@
+<worldbody>
+  <geom type="plane" size="1 1 .1"/>
+
+  <body pos="0 0 1">
+    <freejoint/>
+    <geom type="sphere" size="0.1" solref="-1000 0"/>
+  </body>
+</worldbody>
