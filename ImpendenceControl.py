@@ -22,6 +22,7 @@ def impedance_control(Fxe, vk, x):
 # More legible printing from numpy.
 np.set_printoptions(precision=5, suppress=True, linewidth=100)
 model = mujoco.MjModel.from_xml_path("./universal_robots_ur5e/scene.xml")
+
 data = mujoco.MjData(model)
 # mujoco.mj_jacSubtreeCom(model,data,None,0)
 renderer = mujoco.Renderer(model)
@@ -29,7 +30,7 @@ mujoco.mj_forward(model, data)
 renderer.update_scene(data)
 media.write_image('image.png', renderer.render())
 frames = []
-model.opt.gravity = (0, 0, 0)
+model.opt.gravity = (0, 0, -9.8)
 DURATION = 1000  # seconds
 FRAMERATE = 60  # Hz
 
@@ -43,7 +44,6 @@ camera.distance = 2
 
 mujoco.mj_resetDataKeyframe(model, data, 0)
 
-frames = []
 jacp = np.zeros((3, 6))
 jacr = np.zeros((3, 6))
 

@@ -9,7 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/gym_/gym/vector" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/gym_/gym/wrappers" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Mujoco_impedanceControl" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.10 (Mujoco) (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

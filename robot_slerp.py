@@ -82,7 +82,8 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         actual_pos[:3, 3] = [data.xpos[-1][1], -data.xpos[-1][0], data.xpos[-1][2]]
 
         # 控制舵机运动
-        data.ctrl = ik_joint[1:7]
+
+        data.qpos = ik_joint[1:7]
         # data.qpos = np.zeros(6)
         # data.qacc = np.zeros(6) * 1
         # data.qacc = np.ones(6)*1
@@ -96,6 +97,9 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         # print(data.xfrc_applied )
         # data.qfrc_applied = np.append(np.ones(3)*120,np.ones(3))
         mujoco.mj_step(model, data)
+        mujoco.mj_inverse(model, data)
+        data.ctrl = data.qfrc_inverse
+
         #
         # mujoco.mj_step(model, data)
         # print(data.actuator_force)

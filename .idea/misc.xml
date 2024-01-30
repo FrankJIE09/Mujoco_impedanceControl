@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="Black">
     <option name="sdkName" value="Mujoco_impedanceControl" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Mujoco_impedanceControl" project-jdk-type="Python SDK" />
+=======
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (Mujoco) (2)" project-jdk-type="Python SDK" />
+>>>>>>> 5181b95c3081f1a99d27d1e543facd1d75a2d5d7
 </project>
