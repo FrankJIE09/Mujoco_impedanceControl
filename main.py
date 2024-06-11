@@ -71,7 +71,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         v = -F
         qvel = jacob.T.dot(v)
         # Step the simulation.
-        # data.ctrl = data.qpos + qvel * 0.02
+        data.ctrl = data.qpos + qvel * 0.02
 
         # print(data.sensor(0).data, data.sensor(1).data)
 

@@ -1,7 +1,6 @@
 import numpy as np
 from typing import Callable, Optional, Union, List
 import scipy.linalg
-import mediapy as media
 import matplotlib.pyplot as plt
 import mujoco.viewer
 from scipy.spatial.transform import Rotation
@@ -9,7 +8,7 @@ from scipy.spatial.transform import Rotation
 
 def impedance_control(Fxe, vk, x):
     k = [30, 30, 30, 10, 10, 10]
-    k = np.zeros_like(k)
+    # k = np.zeros_like(k)
     b = [10, 10, 10, 1, 1, 1]
     m = 1
     FPlusDF = Fxe
@@ -28,9 +27,8 @@ data = mujoco.MjData(model)
 renderer = mujoco.Renderer(model)
 mujoco.mj_forward(model, data)
 renderer.update_scene(data)
-media.write_image('image.png', renderer.render())
 frames = []
-model.opt.gravity = (0, 0, -9.8)
+model.opt.gravity = (0, 0, 0)
 DURATION = 1000  # seconds
 FRAMERATE = 60  # Hz
 
@@ -59,6 +57,8 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     while data.time < DURATION:
         # data.xfrc_applied(mujoco.mjtMouse)
         mujoco.mj_jacBody(model, data, jacp, jacr, 7)
+        mujoco.mj_jac(model, data, jacp, jacr,[0,0,0], 7)
+
         jacob = np.vstack((jacp, jacr))
         r = Rotation.from_matrix(data.geom_xmat[-1].reshape(3, 3))
         rpy = r.as_euler('xyz', degrees=False)
@@ -69,10 +69,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         print(f)
         v = impedance_control(f, vk=np.diff(error_array, axis=0)[
             -1], x=error_array[-1])
-        qvel = jacob.T.dot(v)
-        # Step the simulation.
-        data.ctrl = data.qpos + qvel * 0.02
-        print(data.ctrl)
+        q_vel = np.linalg.inv(jacob) @ v
+        data.ctrl = data.qpos + q_vel
         mujoco.mj_step(model, data)
         viewer.sync()
-        # Render and save frames.

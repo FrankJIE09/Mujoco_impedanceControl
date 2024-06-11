@@ -98,7 +98,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         # data.qfrc_applied = np.append(np.ones(3)*120,np.ones(3))
         mujoco.mj_step(model, data)
         mujoco.mj_inverse(model, data)
-        data.ctrl = data.qfrc_inverse
+        # data.ctrl = data.qfrc_inverse
 
         #
         # mujoco.mj_step(model, data)
