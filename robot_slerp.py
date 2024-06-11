@@ -14,7 +14,7 @@ my_chain = Chain.from_urdf_file("./config/ur5e.urdf",
 np.set_printoptions(precision=5, suppress=True, linewidth=100)
 
 # 加载Mujoco模型
-model = mujoco.MjModel.from_xml_path("./universal_robots_ur5e_c/scene.xml")
+model = mujoco.MjModel.from_xml_path("./universal_robots_ur5e_d/scene.xml")
 data = mujoco.MjData(model)
 model.opt.gravity = (0, 0, -9.8)
 mujoco.mj_resetDataKeyframe(model, data, 0)
@@ -50,8 +50,10 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     # for _ in range(3):
     #     random_pos = [random.uniform(-1,1) for _ in range(3)]
     path_array = np.array([[init_pos[0], init_pos[1], init_pos[2] - 0.1],
-                           [init_pos[0] - 0.1, init_pos[1], init_pos[2] - 0.1],
-                           [init_pos[0] - 0.1, init_pos[1], init_pos[2]],
+                           [init_pos[0], init_pos[1] - 0.1, init_pos[2] - 0.1],
+                           [init_pos[0], init_pos[1] - 0.2, init_pos[2]],
+                           [init_pos[0]- 0.2, init_pos[1] , init_pos[2]],
+                           [init_pos[0], init_pos[1] , init_pos[2]- 0.2],
                            [init_pos[0], init_pos[1], init_pos[2]]]
                           )
     interp_pos = bezier_curve(path_array)
@@ -83,15 +85,15 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
 
         # 控制舵机运动
 
-        data.qpos = ik_joint[1:7]
+        data.ctrl = ik_joint[1:7]
         # data.qpos = np.zeros(6)
         # data.qacc = np.zeros(6) * 1
         # data.qacc = np.ones(6)*1
         # data.qvel = np.ones(6)*10
         # data.act = 0
         # data.qfrc_actuator = np.zeros(6)
-        print()
-        data.act = 0
+        # print()
+        # data.act = 0
         # mujoco.mj_forward(model, data)
         # data.qfrc_applied = np.ones(6)*5
         # print(data.xfrc_applied )
