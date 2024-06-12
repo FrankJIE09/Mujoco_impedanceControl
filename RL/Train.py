@@ -50,7 +50,7 @@ class UR5eEnv(gym.Env):
             if self.current_target >= len(self.target_positions):
                 done = True  # End episode if all targets are reached
                 self.current_target = 0  # Reset to the first target for the next episode
-            reward += 10  # Add bonus for reaching the target
+            reward += 100  # Add bonus for reaching the target
         return obs, reward, done, {}
 
     def reset(self):
@@ -79,7 +79,7 @@ class UR5eEnv(gym.Env):
 # Initialize the environment
 env = UR5eEnv()
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = SAC("PPO", env=env, device=device, verbose=1)
+model = SAC("MlpPolicy", env=env, device=device, verbose=1)
 model.learn(total_timesteps=100000)
 
 # Save the model

@@ -4,9 +4,34 @@ import numpy as np
 from gym import spaces
 from mujoco import MjModel, MjData, mj_step, mj_resetData, viewer
 from stable_baselines3 import SAC
+from stable_baselines3.common.callbacks import BaseCallback
 import torch
+import zipfile
+import os
 
 print(torch.cuda.is_available())
+
+
+class SaveOnBestTrainingRewardCallback(BaseCallback):
+    def __init__(self, check_freq: int, log_dir: str, verbose=1):
+        super(SaveOnBestTrainingRewardCallback, self).__init__(verbose)
+        self.check_freq = check_freq
+        self.log_dir = log_dir
+        self.save_path = os.path.join(log_dir, 'best_model.zip')
+
+    def _init_callback(self):
+        if self.save_path is not None:
+            os.makedirs(self.log_dir, exist_ok=True)
+
+    def _on_step(self) -> bool:
+        if self.n_calls % self.check_freq == 0:
+            model_path = os.path.join(self.log_dir, f'model_{self.n_calls}.zip')
+            self.model.save(model_path)
+            with zipfile.ZipFile(os.path.join(self.log_dir, f'model_{self.n_calls}_archive.zip'), 'w') as zipf:
+                zipf.write(model_path, os.path.basename(model_path))
+            os.remove(model_path)
+        return True
+
 
 class UR5eEnv(gym.Env):
     """Custom Environment for UR5e robot arm that follows gym interface"""
@@ -48,7 +73,7 @@ class UR5eEnv(gym.Env):
             if self.current_target >= len(self.target_positions):
                 done = True  # End episode if all targets are reached
                 self.current_target = 0  # Reset to the first target for the next episode
-            reward += 10  # Add bonus for reaching the target
+            reward += 100 * self.current_target  # Add bonus for reaching the target
 
         return obs, reward, done, {}
 
@@ -78,8 +103,16 @@ class UR5eEnv(gym.Env):
 env = UR5eEnv()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = SAC("MlpPolicy", env=env, device=device, verbose=1)
-model.learn(total_timesteps=100000)
 
-# Save the model
-model.save("sac_ur5e")
+# Create log dir
+log_dir = "logs/"
+os.makedirs(log_dir, exist_ok=True)
 
+# Initialize the callback
+callback = SaveOnBestTrainingRewardCallback(check_freq=10000, log_dir=log_dir)
+
+# Train the agent
+model.learn(total_timesteps=500000, callback=callback)
+
+# Save the final model
+model.save("sac_ur5e_final")
