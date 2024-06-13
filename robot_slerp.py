@@ -18,20 +18,30 @@ model = mujoco.MjModel.from_xml_path("./universal_robots_ur5e_d/scene.xml")
 data = mujoco.MjData(model)
 model.opt.gravity = (0, 0, -9.8)
 mujoco.mj_resetDataKeyframe(model, data, 0)
+
 camera = mujoco.MjvCamera()
 mujoco.mjv_defaultFreeCamera(model, camera)
-camera.distance = 0
+
+camera.elevation = 100
+camera.azimuth = 100
+camera.distance = 100
+#
+# camera.distance = 1000
+# camera.distance = 0
+# renderer = mujoco.Renderer(model)
+
 
 # 使用Mujoco的viewer来可视化模型
 with mujoco.viewer.launch_passive(model, data) as viewer:
+    time.sleep(10)
     init_orientation = Rotation.from_euler('zyx', [0, 0, 0], degrees=True)
     init_rpy = init_orientation.as_euler('zyx')
     # 定义关键帧的姿态
     quaternions = [Rotation.from_euler('zyx', init_rpy),
                    Rotation.from_euler('zyx', [e + 0.5 if i == 0 else e for i, e in enumerate(init_rpy)], ),
                    Rotation.from_euler('zyx', [e + 0 if i == 0 else e for i, e in enumerate(init_rpy)], ),
-                   Rotation.from_euler('zyx', [e + 0.4 if i == 2 else e for i, e in enumerate(init_rpy)], ),
-                   Rotation.from_euler('zyx', [e + 0.6 if i == 2 else e for i, e in enumerate(init_rpy)], )]
+                   Rotation.from_euler('zyx', [e + 0.4 if i == 1 else e for i, e in enumerate(init_rpy)], ),
+                   Rotation.from_euler('zyx', [e - 0.6 if i == 1 else e for i, e in enumerate(init_rpy)], )]
     key_rots = Rotation.random(5)
     for i in range(quaternions.__len__()):
         key_rots[i] = quaternions[i]
@@ -63,8 +73,8 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     # 循环控制机械臂的姿态变化
     while i < 2000:
         # 计算目标变换矩阵
-        # target_matrix[:3, :3] = np.dot(init_matrix, interp_rots[i].as_matrix())
-        target_matrix[:3, :3] = np.dot(init_matrix, init_orientation.as_matrix())
+        target_matrix[:3, :3] = np.dot(init_matrix, interp_rots[i].as_matrix())
+        # target_matrix[:3, :3] = np.dot(init_matrix, init_orientation.as_matrix())
 
         target_matrix[:3, 3] = interp_pos[i]
 
@@ -100,12 +110,13 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         # data.qfrc_applied = np.append(np.ones(3)*120,np.ones(3))
         mujoco.mj_step(model, data)
         mujoco.mj_inverse(model, data)
-        # data.ctrl = data.qfrc_inverse
 
+        # data.ctrl = data.qfrc_inverse
+        # renderer.update_scene(data, camera=camera)
         #
         # mujoco.mj_step(model, data)
         # print(data.actuator_force)
-
+        # viewer.cam = camera
         # time.sleep(0.01)
         i = i + 1
         viewer.sync()

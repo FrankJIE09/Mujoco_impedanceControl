@@ -134,4 +134,5 @@
     <keyframe>
         <key name="home" qpos="0 -1.5708 1.5708 3.14 -1.5708 0" ctrl="0 -1.5708 1.5708 3.14 -1.5708 0"/>
     </keyframe>
+
 </mujoco>
