@@ -1,55 +1,67 @@
 import numpy as np
+from scipy.linalg import qr
+from scipy.optimize import least_squares
 
-# 假设机械臂参数和初始状态
-num_joints = 6
-joint_angles = np.random.rand(num_joints) * np.pi  # 随机初始化关节角度
-joint_velocities = np.zeros(num_joints)  # 初始速度为零
-joint_accelerations = np.zeros(num_joints)  # 初始加速度为零
-desired_torque = np.zeros(num_joints)  # 目标扭矩
+# 假设这些是从传感器获得的数据
+# q 是关节位置的时间序列数据
+# q_dot 是关节速度的时间序列数据
+# q_ddot 是关节加速度的时间序列数据
+# tau 是对应的力矩数据
+num_samples = 100
+num_joints = 2
 
+q = np.random.randn(num_samples, num_joints)
+q_dot = np.random.randn(num_samples, num_joints)
+q_ddot = np.random.randn(num_samples, num_joints)
+tau = np.random.randn(num_samples, num_joints)
 
-# 动力学模型函数（简化模型，仅示例）
-def compute_torque(joint_angles, joint_velocities, joint_accelerations, link_lengths, link_masses, gravity=9.81):
-    num_joints = len(joint_angles)
-    torques = np.zeros(num_joints)
+# 定义动力学方程中的矩阵 W
+def W_matrix(q, q_dot, q_ddot):
+    # 这里假设 W 是一个包含 q, q_dot, q_ddot 的线性组合
+    # 实际中，W 的形式取决于具体的机器人动力学
+    W = []
+    for i in range(q.shape[0]):
+        q_i = q[i]
+        q_dot_i = q_dot[i]
+        q_ddot_i = q_ddot[i]
+        W_i = np.vstack([
+            q_ddot_i,  # 惯性项
+            q_dot_i,  # 科氏力和离心力项
+            q_i  # 阻尼和摩擦项
+        ])
+        W.append(W_i)
+    return np.array(W)
 
-    # 假设每个关节后面的连杆质量集中影响该关节
-    for i in range(num_joints):
-        # 求和所有后续连杆对当前关节产生的力矩
-        for j in range(i, num_joints):
-            # 链接末端到关节i的距离
-            distance_to_joint = np.sum(link_lengths[i:j + 1])
-            # 链接的重力产生的力矩
-            torque_due_to_gravity = link_masses[j] * gravity * distance_to_joint * np.sin(joint_angles[i])
-            # 链接的加速度产生的力矩
-            torque_due_to_acceleration = link_masses[j] * distance_to_joint * joint_accelerations[i]
+# 计算矩阵 W
+W = W_matrix(q, q_dot, q_ddot)
 
-            # 累加计算总扭矩
-            torques[i] += torque_due_to_gravity + torque_due_to_acceleration
+# QR分解
+Q, R = qr(W, mode='economic')
 
-    # 加上由于摩擦产生的扭矩（简化处理为与速度成正比）
-    friction_coefficient = 0.1  # 摩擦系数
-    torques -= friction_coefficient * joint_velocities
+# 提取 W_B 和 tau_B
+W_B = Q
 
-    return torques
+# 最小二乘法求解 P_B
+def residuals(P_B, W_B, tau_B):
+    return W_B @ P_B - tau_B
 
+# 初始猜测
+P_B_initial = np.zeros(W_B.shape[1])
 
-# 牛顿法更新
-def newton_update(current_angles, target_torque, tolerance=1e-6, max_iterations=100):
-    for i in range(max_iterations):
-        current_torque = compute_torque(current_angles, joint_velocities, joint_accelerations, np.ones(6)*0.1,  np.ones(6)*10)
-        torque_error = current_torque - target_torque
-        if np.linalg.norm(torque_error) < tolerance:
-            print(f"Converged after {i + 1} iterations.")
-            return current_angles
-        # 这里的Jacobian矩阵是假设的简化形式
-        J = np.eye(num_joints)  # 假设每个关节独立影响扭矩
-        # 牛顿法更新步骤
-        current_angles -= np.linalg.solve(J, torque_error)
-    print("Failed to converge.")
-    return current_angles
+# 使用最小二乘法优化
+result = least_squares(residuals, P_B_initial, args=(W_B, tau))
+P_B_estimated = result.x
 
+# 从 P_B 计算 P
+P_estimated = np.linalg.inv(R) @ P_B_estimated
 
-# 运行牛顿法求解
-final_angles = newton_update(joint_angles, desired_torque)
-print("Final joint angles:", final_angles)
+# 最终的参数估计
+print("Estimated Parameters (P_B):", P_B_estimated)
+print("Estimated Original Parameters (P):", P_estimated)
+
+# 用估计的参数重新计算力矩
+tau_estimated = W @ P_estimated
+
+# 比较实际力矩和估计力矩
+print("Actual Torque (tau):", tau.flatten())
+print("Estimated Torque (tau_estimated):", tau_estimated.flatten())

@@ -1,30 +1,54 @@
 import numpy as np
+from scipy.linalg import qr
+from scipy.optimize import least_squares
 
-# 假设动力学参数
-m = 1.5  # 质量
-I = 0.5  # 惯性
+# 假设这些是从传感器获得的数据
+# q, q_dot, q_ddot 是关节位置、速度和加速度的时间序列数据
+# tau 是对应的力矩数据
+q = np.random.randn(10, 1)
+q_dot = np.random.randn(10, 1)
+q_ddot = np.random.randn(10, 1)
+tau = np.hstack((q, q_dot, q_ddot, np.ones_like(q))) @ np.array([1, 2, 3, 4])
 
-# 时间参数
-t = np.linspace(0, 10, 100)  # 时间从0到10秒，共100个数据点
 
-# 生成模拟的位置、速度和加速度数据
-theta = np.sin(t)  # 位置数据
-theta_dot = np.cos(t)  # 速度数据
-theta_double_dot = -np.sin(t)  # 加速度数据
+# 定义动力学方程中的矩阵 W
+def W_matrix(q, q_dot, q_ddot):
+    # 这里假设 W 是一个包含 q, q_dot, q_ddot 的线性组合
+    # 实际中，W 的形式取决于具体的机器人动力学
+    W = np.hstack((q, q_dot, q_ddot, np.ones_like(q)))
+    return W
 
-# 根据动力学方程生成模拟扭矩数据
-# 扭矩 τ = I*α + m*g*l*sin(θ)
-# 这里简化处理：g = 9.81, l = 1
-g = 9.81
-l = 1
-torque = I * theta_double_dot + m * g * l * np.sin(theta)
 
-# 堆叠特征矩阵
-X = np.vstack([theta_double_dot, np.sin(theta)]).T
+# 计算矩阵 W
+W = W_matrix(q, q_dot, q_ddot)
 
-# 使用普通最小二乘法估计参数
-params = np.linalg.lstsq(X, torque, rcond=None)[0]
-estimated_I, estimated_mgl = params
+# QR分解
+Q, R = qr(W, mode='economic')
 
-print("Estimated Inertia (I):", estimated_I)
-print("Estimated m*g*l:", estimated_mgl)
+# 提取 W_B 和 tau_B
+W_B = Q
+tau_B = tau
+
+
+# 最小二乘法求解 P_B
+def residuals(P_B, W_B, tau_B):
+    return (W_B @ P_B - tau_B).flatten()
+
+
+# 初始猜测
+P_B_initial = np.zeros(W_B.shape[1])
+
+# 使用最小二乘法优化
+result = least_squares(residuals, P_B_initial, args=(W_B, tau_B))
+P_B_estimated = result.x
+
+# 最终的参数估计
+print("Estimated Parameters (P_B):", P_B_estimated)
+print("Parameters:", np.linalg.inv(R) @ P_B_estimated)
+
+# 用估计的参数重新计算力矩
+tau_estimated = W_B @ P_B_estimated
+
+# 比较实际力矩和估计力矩
+print("Actual Torque (tau):", tau.flatten())
+print("Estimated Torque (tau_estimated):", tau_estimated.flatten())
